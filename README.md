@@ -18,13 +18,112 @@
 
 ## ✨ Features
 
-- **SQLi Testing Module** — Automated sqlmap integration + Manual error-based extraction
-- **Vulnerability Management** — Track, filter, and manage findings by product and year
-- **POC Management** — Document proof-of-concept with evidence upload and retesting
-- **Advanced Tools** — Log4Shell scanner, XSS, directory brute-force, and more
-- **Real-time Output** — Live terminal output for all running scans
-- **Multi-user** — Role-based access control with JWT authentication
-- **Export** — PDF and Word report generation
+### 🗡️ SQLi Testing Module
+Dual-mode SQL injection testing — automated and manual.
+
+<img width="1867" height="826" alt="image" src="https://github.com/user-attachments/assets/7012213b-8c51-4111-8f3f-a467e2254983" />
+
+**sqlmap Integration:**
+- Import raw HTTP requests directly (paste from Burp Suite or browser DevTools)
+- Auto-parse headers, cookies, body, and injection parameters
+- Full sqlmap flag support: `--dbs`, `--tables`, `--columns`, `--dump` with `-D` and `-T` targeting
+- Tamper script selection (20+ scripts) for WAF bypass
+- Technique selector: Boolean, Error, Union, Stacked, Time-based, Inline
+- Real-time output terminal with color-coded sqlmap logs
+- Session history with status tracking (queued → running → completed)
+
+**Manual Error-Based Extraction:**
+- Step-by-step guided workflow: Configure → Test → Extract
+- Support for JSON body, form-urlencoded, GET parameters
+- Auto-flatten nested JSON to selectable parameter list
+- Built-in vulnerability test payloads (Single Quote, CONVERT, WAITFOR DELAY)
+- One-click extraction: DB Name, Current User, Version, Server Name
+- Chained enumeration: Databases → Tables → Columns → Dump
+- Custom SQL query execution
+- Export results to JSON
+
+---
+
+### 🛡️ Vulnerability Management
+Centralized vulnerability tracking with full lifecycle management.
+
+<img width="1857" height="820" alt="image" src="https://github.com/user-attachments/assets/ef3c77e3-bc20-437f-a4ad-1e702f67cfe0" />
+
+- **Filter & Search** — Filter findings by product, year, severity, and status
+- **CVSS Scoring** — Record and display CVSS scores per finding
+- **SLA Tracking** — Automatic SLA breach detection and alerting
+- **Status Workflow** — Track findings from Open → In Progress → Resolved → Accepted Risk
+- **Severity Classification** — Critical, High, Medium, Low, Informational
+- **Multi-product Support** — Organize findings by product/application
+- **Bulk Operations** — Update multiple findings at once
+- **Audit Trail** — Full history of changes per finding
+
+---
+
+### 📋 POC Management
+Professional proof-of-concept documentation with collaboration features.
+
+<img width="1336" height="882" alt="image" src="https://github.com/user-attachments/assets/bbbcfc74-42f1-46e1-9a5a-8c26a003e142" />
+
+- **Multi-tab Modal** — Organized tabs: Details, Evidence, Retesting
+- **Evidence Upload** — Attach screenshots, files, and documents as proof
+- **Evidence Gallery** — View and manage uploaded evidence inline
+- **Retesting Workflow** — Log retesting attempts with date, tester, and result
+- **Retest Status** — Track whether fixes have been verified (Fixed / Still Vulnerable / Partial)
+- **Export to PDF** — Generate professional PDF report per POC
+- **Export to Word** — Generate `.docx` report for client delivery
+- **Linked to Findings** — Each POC is linked to its parent vulnerability
+
+---
+
+### ⚙️ Advanced Tools
+Integrated offensive security toolkit accessible from a single interface.
+
+<img width="1351" height="821" alt="image" src="https://github.com/user-attachments/assets/28e0b366-cb75-43de-b2c4-2e4f6b8b9220" />
+
+- **Log4Shell Scanner (CVE-2021-44228)** — Automated header injection across User-Agent, Referer, X-Api-Version, X-Forwarded-For, and 10+ headers with OAST callback support
+- **XSS Scanner (Dalfox)** — Reflected and stored XSS detection with custom payloads
+- **Directory Bruteforce (ffuf/dirsearch)** — Fast content discovery with wordlist support
+- **Subdomain Enumeration (subfinder/amass)** — Passive and active subdomain discovery
+- **Port Scanner (nmap/masscan)** — Service and version detection
+- **HTTP Probe (httpx)** — Live host detection with status codes and technology fingerprinting
+- **Nuclei** — Template-based vulnerability scanning with 9000+ community templates
+- **DNS Resolver (dnsx)** — Bulk DNS resolution and record enumeration
+
+---
+
+### 📡 Real-time Output
+Live terminal output for all running scans.
+
+- Color-coded terminal output (green for findings, red for errors, yellow for warnings)
+- Polling-based live updates every 3 seconds
+- Full output history preserved per session
+- Line count indicator
+- Status indicator (queued / running / completed / failed)
+
+---
+
+### 👥 Multi-user & Authentication
+Secure multi-user access with role-based control.
+
+- **JWT Authentication** — Stateless token-based auth with configurable expiry
+- **Role-based Access Control** — Admin and Analyst roles with permission boundaries
+- **User Management** — Create, update, and deactivate user accounts
+- **Audit Logging** — All actions logged with timestamp and user identity
+- **Session Management** — Automatic token refresh and logout on expiry
+
+---
+
+### 📄 Export & Reporting
+Generate professional deliverables directly from the platform.
+
+- **PDF Export** — Styled PDF reports with findings, evidence, and remediation
+- **Word Export** — Editable `.docx` reports for client customization
+- **JSON Export** — Raw data export for integration with other tools
+- **Per-finding Reports** — Export individual POC documentation
+- **Bulk Reports** — Export all findings for a product in one report
+
+---
 
 ## 🏗️ Architecture
 ```
@@ -45,7 +144,6 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-
 - Docker & Docker Compose
 - Git
 
@@ -53,15 +151,14 @@
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/YOUR_USERNAME/offensecops.git
+git clone https://github.com/opsecramdan/offensecops.git
 cd offensecops
 ```
 
 **2. Configure environment**
 ```bash
 cp .env.example .env
-# Edit .env with your own passwords and secrets
-nano .env
+nano .env   # Set your own passwords and secrets
 ```
 
 **3. Build and start**
@@ -74,11 +171,7 @@ docker compose up -d --build
 http://localhost
 ```
 
-Default credentials:
-```
-Username: admin
-Password: (set during first run)
-```
+---
 
 ## 📁 Project Structure
 ```
@@ -104,6 +197,8 @@ offensecops/
 └── README.md
 ```
 
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
@@ -114,39 +209,28 @@ offensecops/
 | Queue | Celery + Redis |
 | Proxy | Nginx |
 | Container | Docker Compose |
-| Security Tools | sqlmap, nuclei, nmap, subfinder, dalfox |
+| Security Tools | sqlmap, nuclei, nmap, subfinder, dalfox, ffuf, httpx, dnsx |
 
-## 📖 Modules
-
-### SQLi Testing
-- Import raw HTTP requests
-- Automated sqlmap with real-time output
-- Manual error-based extraction (MSSQL, MySQL, PostgreSQL, Oracle)
-- Database enumeration: `--dbs`, `--tables`, `--columns`, `--dump`
-
-### Vulnerability Management
-- Filter by product, year, and severity
-- CVSS scoring
-- SLA tracking
-
-### POC Management
-- Evidence upload (images, files)
-- Retesting workflow
-- Export to PDF/Word
+---
 
 ## ⚙️ Configuration
 
 All configuration is managed via environment variables in `.env`:
 
-| Variable | Description |
-|----------|-------------|
-| `POSTGRES_PASSWORD` | PostgreSQL password |
-| `REDIS_PASSWORD` | Redis password |
-| `JWT_SECRET_KEY` | JWT signing key (min 32 chars) |
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `POSTGRES_PASSWORD` | PostgreSQL password | `str0ng_p4ssw0rd` |
+| `REDIS_PASSWORD` | Redis password | `r3dis_p4ss` |
+| `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | `your-secret-key-here` |
+| `GF_SECURITY_ADMIN_PASSWORD` | Grafana admin password (optional) | `grafana_pass` |
+
+---
 
 ## 🔒 Security Notice
 
-This tool is intended for **authorized penetration testing and security research only**. Users are responsible for complying with applicable laws. The developers assume no liability for misuse.
+This tool is intended for **authorized penetration testing and security research only**. Users are responsible for complying with applicable laws and obtaining proper authorization before testing any systems. The developers assume no liability for misuse.
+
+---
 
 ## 📄 License
 
