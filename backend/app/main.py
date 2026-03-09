@@ -15,10 +15,38 @@ from app.api.routes import auth, targets, scans, sqli, vulns, tools, reports, au
 async def lifespan(app: FastAPI):
     # Startup
     await init_db()
+    await create_default_admin()
     print("✅ OffenSecOps Backend started")
     yield
     # Shutdown
     print("🛑 OffenSecOps Backend shutting down")
+
+async def create_default_admin():
+    try:
+        from app.db.session import AsyncSessionLocal
+        from app.db.models import User
+        from app.core.security import hash_password
+        from sqlalchemy import select
+        import os
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(User).where(User.username == "admin"))
+            existing = result.scalar_one_or_none()
+            if not existing:
+                default_password = os.getenv("DEFAULT_ADMIN_PASSWORD", "Admin123!")
+                admin = User(
+                    username="admin",
+                    email="admin@offensecops.local",
+                    hashed_password=hash_password(default_password),
+                    role="admin",
+                    is_active=True,
+                )
+                db.add(admin)
+                await db.commit()
+                print(f"✅ Default admin created — username: admin / password: {default_password}")
+            else:
+                print("ℹ️  Admin user already exists")
+    except Exception as e:
+        print(f"⚠️  Could not create default admin: {e}")
 
 
 app = FastAPI(

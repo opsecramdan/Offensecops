@@ -61,6 +61,11 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
     environment:
       DATABASE_URL: "postgresql+asyncpg://offensecops_user:${POSTGRES_PASSWORD}@postgres:5432/offensecops"
+      DEFAULT_ADMIN_PASSWORD: "${DEFAULT_ADMIN_PASSWORD:-Admin123!}"
+      VIRUSTOTAL_API_KEY: "${VIRUSTOTAL_API_KEY:-}"
+      SECURITYTRAILS_API_KEY: "${SECURITYTRAILS_API_KEY:-}"
+      CENSYS_API_TOKEN: "${CENSYS_API_TOKEN:-}"
+      NVD_API_KEY: "${NVD_API_KEY:-}"
       REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
       JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
       JWT_ALGORITHM: "HS256"

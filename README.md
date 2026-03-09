@@ -217,12 +217,19 @@ offensecops/
 
 All configuration is managed via environment variables in `.env`:
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `POSTGRES_PASSWORD` | PostgreSQL password | `str0ng_p4ssw0rd` |
-| `REDIS_PASSWORD` | Redis password | `r3dis_p4ss` |
-| `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | `your-secret-key-here` |
-| `GF_SECURITY_ADMIN_PASSWORD` | Grafana admin password (optional) | `grafana_pass` |
+| Variable | Description | Required | Where to Get |
+|----------|-------------|----------|--------------|
+| `POSTGRES_PASSWORD` | PostgreSQL password | ✅ Yes | Set your own |
+| `REDIS_PASSWORD` | Redis password | ✅ Yes | Set your own |
+| `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | ✅ Yes | Set your own |
+| `DEFAULT_ADMIN_PASSWORD` | Auto-created admin password | ✅ Yes | Default: `Admin123!` |
+| `GF_SECURITY_ADMIN_PASSWORD` | Grafana admin password | ❌ Optional | Set your own |
+| `VIRUSTOTAL_API_KEY` | VirusTotal subdomain enumeration | ❌ Optional | [virustotal.com/gui/my-apikey](https://www.virustotal.com/gui/my-apikey) |
+| `SECURITYTRAILS_API_KEY` | SecurityTrails subdomain data | ❌ Optional | [securitytrails.com/app/account/credentials](https://securitytrails.com/app/account/credentials) |
+| `CENSYS_API_TOKEN` | Censys host & subdomain search | ❌ Optional | [search.censys.io/account/api](https://search.censys.io/account/api) |
+| `NVD_API_KEY` | NVD CVE database (faster rate limit) | ❌ Optional | [nvd.nist.gov/developers/request-an-api-key](https://nvd.nist.gov/developers/request-an-api-key) |
+
+> **Note:** Without OSINT API keys, subdomain enumeration will still work via passive tools (subfinder, amass) but will skip VirusTotal, SecurityTrails, and Censys sources.
 
 ---
 
