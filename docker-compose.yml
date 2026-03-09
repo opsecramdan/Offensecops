@@ -1,0 +1,204 @@
+networks:
+  offensecops_net:
+    driver: bridge
+  tool_execution_net:
+    driver: bridge
+    internal: true
+
+volumes:
+  postgres_data:
+  redis_data:
+  vault_data:
+  scan_outputs:
+  grafana_data:
+  prometheus_data:
+
+services:
+  # ─── DATABASE ───────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: offensecops_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: "changeme"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - offensecops_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U offensecops_user -d offensecops"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── REDIS ──────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: offensecops_redis
+    restart: unless-stopped
+    command: redis-server --requirepass "changeme" --bind 0.0.0.0 --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - offensecops_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "changeme", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── BACKEND ────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: offensecops_backend
+    restart: unless-stopped
+    # Dev mode: mount source code langsung, auto-reload saat file berubah
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://offensecops_user:${POSTGRES_PASSWORD}@postgres:5432/offensecops"
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+      JWT_ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      APP_HOST: "0.0.0.0"
+      APP_PORT: "8000"
+      ENVIRONMENT: "development"
+      DOCKER_SOCKET: "/var/run/docker.sock"
+      # OSINT API Keys (opsional — isi untuk aktifkan source tambahan)
+      VIRUSTOTAL_API_KEY: "${VIRUSTOTAL_API_KEY:-}"
+      SECURITYTRAILS_API_KEY: "${SECURITYTRAILS_API_KEY:-}"
+      CENSYS_API_TOKEN: "${CENSYS_API_TOKEN:-}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - scan_outputs:/app/scan_outputs
+      - ./nuclei-templates-public:/app/nuclei-templates:ro
+      - /usr/local/bin/wpscan:/usr/local/bin/wpscan:ro
+      - /tmp/offensecops/uploads:/app/uploads
+      - /usr/local/bin/nuclei:/usr/local/bin/nuclei:ro
+      - /tmp/offensecops/nuclei-config-public:/home/appuser/.config/nuclei:rw
+      # Bind mount source code — perubahan file langsung aktif tanpa rebuild
+      - ./backend/app:/app/app
+      # Wordlist files untuk Advanced Tools
+      - ./wordlist:/app/wordlist:ro
+    networks:
+      - offensecops_net
+      - tool_execution_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  # ─── CELERY WORKER ──────────────────────────────────────────
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: offensecops_celery
+    restart: unless-stopped
+    command: celery -A celery_worker worker --loglevel=info -Q scan_queue,recon_queue,exploit_queue --concurrency=4
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://offensecops_user:${POSTGRES_PASSWORD}@postgres:5432/offensecops"
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+      DOCKER_SOCKET: "/var/run/docker.sock"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - scan_outputs:/app/scan_outputs
+      - /usr/local/bin/nuclei:/usr/local/bin/nuclei:ro
+      - ./nuclei-templates-public:/home/appuser/nuclei-templates:ro
+      - ./nuclei-config-public:/home/appuser/.config/nuclei:rw
+      - ./nuclei-config-public/uncover:/home/appuser/.config/uncover:rw
+    networks:
+      - offensecops_net
+      - tool_execution_net
+    depends_on:
+      - backend
+      - redis
+
+  # ─── CELERY BEAT ────────────────────────────────────────────
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: offensecops_beat
+    restart: unless-stopped
+    command: celery -A celery_worker beat --loglevel=info --scheduler redbeat.schedulers.RedBeatScheduler
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://offensecops_user:${POSTGRES_PASSWORD}@postgres:5432/offensecops"
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+    networks:
+      - offensecops_net
+    depends_on:
+      - celery_worker
+
+  # ─── FRONTEND ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: offensecops_frontend
+    restart: unless-stopped
+    command: sh -c "npm install --silent && npm run dev -- --host 0.0.0.0 --port 3000"
+    volumes:
+      - ./frontend/src:/app/src
+    environment:
+      VITE_API_URL: ""
+    networks:
+      - offensecops_net
+    depends_on:
+      - backend
+
+  # ─── NGINX ──────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: offensecops_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - offensecops_net
+    depends_on:
+      - frontend
+      - backend
+
+  # ─── PROMETHEUS ─────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: offensecops_prometheus
+    restart: unless-stopped
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - offensecops_net
+    ports:
+      - "9090:9090"
+
+  # ─── GRAFANA ────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: offensecops_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "changeme"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - offensecops_net
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus

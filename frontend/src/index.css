@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #0a0c10;
+    color: #e6edf3;
+    font-family: 'Syne', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0d1117;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #21262d;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #30363d;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-bg-card border border-border-default rounded-lg;
+  }
+
+  .btn-primary {
+    @apply bg-accent-primary text-bg-primary font-semibold px-4 py-2 rounded-md
+           hover:bg-opacity-90 transition-all duration-200 text-sm
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-bg-tertiary border border-border-default text-text-primary font-medium px-4 py-2 rounded-md
+           hover:border-border-active hover:text-accent-primary transition-all duration-200 text-sm;
+  }
+
+  .btn-danger {
+    @apply bg-accent-secondary text-white font-semibold px-4 py-2 rounded-md
+           hover:bg-opacity-90 transition-all duration-200 text-sm;
+  }
+
+  .input-field {
+    @apply w-full bg-bg-tertiary border border-border-default rounded-md px-3 py-2
+           text-text-primary text-sm font-mono placeholder-text-muted
+           focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary
+           transition-colors duration-200;
+  }
+
+  .badge-critical {
+    @apply bg-severity-critical bg-opacity-20 text-severity-critical border border-severity-critical border-opacity-30 text-xs font-mono px-2 py-0.5 rounded;
+  }
+  .badge-high {
+    @apply bg-severity-high bg-opacity-20 text-severity-high border border-severity-high border-opacity-30 text-xs font-mono px-2 py-0.5 rounded;
+  }
+  .badge-medium {
+    @apply bg-severity-medium bg-opacity-20 text-severity-medium border border-severity-medium border-opacity-30 text-xs font-mono px-2 py-0.5 rounded;
+  }
+  .badge-low {
+    @apply bg-severity-low bg-opacity-20 text-severity-low border border-severity-low border-opacity-30 text-xs font-mono px-2 py-0.5 rounded;
+  }
+  .badge-info {
+    @apply bg-severity-info bg-opacity-20 text-severity-info border border-severity-info border-opacity-30 text-xs font-mono px-2 py-0.5 rounded;
+  }
+
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .glow-teal {
+    box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+  }
+
+  .terminal-text {
+    @apply font-mono text-sm text-accent-primary;
+  }
+}
+
+/* Cyber grid background */
+.cyber-bg {
+  background-color: #0a0c10;
+  background-image:
+    linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scan line animation overlay */
+.scan-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.3), transparent);
+  animation: scanLine 4s linear infinite;
+}
+
+/* XTerm terminal custom styles */
+.xterm-container {
+  background: #0a0c10;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #21262d;
+}
+
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2130;
+  color: #e6edf3;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  border: 1px solid #21262d;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 100;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Additional utility classes ──────────────────────────── */
+.label-field {
+  @apply text-text-muted text-xs font-mono uppercase tracking-wider block;
+}
+
+.badge-critical {
+  @apply text-xs font-mono font-semibold text-severity-critical bg-severity-critical bg-opacity-10 border border-severity-critical border-opacity-30 px-2 py-0.5 rounded capitalize;
+}
+.badge-high {
+  @apply text-xs font-mono font-semibold text-severity-high bg-severity-high bg-opacity-10 border border-severity-high border-opacity-30 px-2 py-0.5 rounded capitalize;
+}
+.badge-medium {
+  @apply text-xs font-mono font-semibold text-severity-medium bg-severity-medium bg-opacity-10 border border-severity-medium border-opacity-30 px-2 py-0.5 rounded capitalize;
+}
+.badge-low {
+  @apply text-xs font-mono font-semibold text-severity-low bg-severity-low bg-opacity-10 border border-severity-low border-opacity-30 px-2 py-0.5 rounded capitalize;
+}
+.badge-info {
+  @apply text-xs font-mono font-semibold text-text-secondary bg-bg-tertiary border border-border-default px-2 py-0.5 rounded capitalize;
+}
