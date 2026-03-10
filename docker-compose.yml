@@ -76,9 +76,6 @@ services:
       ENVIRONMENT: "development"
       DOCKER_SOCKET: "/var/run/docker.sock"
       # OSINT API Keys (opsional — isi untuk aktifkan source tambahan)
-      VIRUSTOTAL_API_KEY: "${VIRUSTOTAL_API_KEY:-}"
-      SECURITYTRAILS_API_KEY: "${SECURITYTRAILS_API_KEY:-}"
-      CENSYS_API_TOKEN: "${CENSYS_API_TOKEN:-}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - scan_outputs:/app/scan_outputs

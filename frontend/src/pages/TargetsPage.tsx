@@ -531,7 +531,7 @@ export default function TargetsPage() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => refetch()} className="btn-secondary p-2"><RefreshCw size={14} /></button>
-          <ExportMenu groupId={filterGroup || undefined} />
+          <ExportMenu groupId={filterGroup || undefined} search={search || undefined} filterCrit={filterCrit || undefined} filterType={filterTypes.length === 1 ? filterTypes[0] : undefined} />
           <button onClick={() => setShowAddGroup(true)}
             className="btn-secondary flex items-center gap-2 text-sm">
             <FolderPlus size={14} /> New Group
@@ -715,3 +715,4 @@ export default function TargetsPage() {
     </div>
   )
 }
+ 

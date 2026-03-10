@@ -213,15 +213,21 @@ async def export_targets(
     format: str = Query("csv", regex="^(csv|txt|xlsx)$"),
     group_id: Optional[str] = Query(None),
     type: Optional[str] = Query(None),
+    criticality: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Export targets as CSV / TXT / Excel"""
+    """Export targets as CSV / TXT / Excel — respects active filters"""
     query = select(Target)
     if group_id:
         query = query.where(Target.group_id == group_id)
     if type:
         query = query.where(Target.type == type)
+    if criticality:
+        query = query.where(Target.criticality == criticality)
+    if search:
+        query = query.where(Target.value.ilike(f"%{search}%"))
     query = query.order_by(Target.value)
     result = await db.execute(query)
     targets = result.scalars().all()
