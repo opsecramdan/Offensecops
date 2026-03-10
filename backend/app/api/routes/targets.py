@@ -227,7 +227,13 @@ async def export_targets(
     if criticality:
         query = query.where(Target.criticality == criticality)
     if search:
-        query = query.where(Target.value.ilike(f"%{search}%"))
+        from sqlalchemy import or_
+        query = query.where(
+            or_(
+                Target.value.ilike(f"%{search}%"),
+                Target.ip_address.ilike(f"%{search}%"),
+            )
+        )
     query = query.order_by(Target.value)
     result = await db.execute(query)
     targets = result.scalars().all()
